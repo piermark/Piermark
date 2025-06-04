@@ -15,3 +15,5 @@ cd Reperibilita
 Il file APK verrà generato in `app/build/outputs/apk/debug/`. Copiatelo sul dispositivo e installatelo per effettuare i test.
 
 L'interfaccia permette di selezionare un contatto e aggiungere più intervalli. Per ogni intervallo vengono scelti una data e un'orario di inizio e di fine tramite i relativi selettori. Una volta programmati, gli allarmi vengono ripristinati automaticamente al riavvio del telefono.
+
+È presente inoltre un pulsante "Annulla Programmazione" che rimuove tutte le fasce orarie salvate. Per evitare che Android chiuda l'applicazione in background è consigliato disattivare le ottimizzazioni batteria per "Reperibilità" dalle impostazioni del dispositivo.

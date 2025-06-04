@@ -11,4 +11,5 @@
     <string name="select_end_time">Ora di fine</string>
     <string name="select_start_date">Data di inizio</string>
     <string name="select_end_date">Data di fine</string>
+    <string name="clear_schedule">Annulla Programmazione</string>
 </resources>

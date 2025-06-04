@@ -40,12 +40,14 @@ class MainActivity : AppCompatActivity() {
         val scheduleButton: Button = findViewById(R.id.scheduleButton)
         val activateButton: Button = findViewById(R.id.activateButton)
         val deactivateButton: Button = findViewById(R.id.deactivateButton)
+        val clearButton: Button = findViewById(R.id.clearScheduleButton)
 
         selectContactButton.setOnClickListener { pickContact() }
         addIntervalButton.setOnClickListener { addInterval() }
         scheduleButton.setOnClickListener { schedule() }
         activateButton.setOnClickListener { ForwardingService.activate(this, phoneEditText.text.toString()) }
         deactivateButton.setOnClickListener { ForwardingService.deactivate(this) }
+        clearButton.setOnClickListener { clearSchedule() }
 
         requestPermissionsIfNeeded()
         loadScheduledData()
@@ -143,6 +145,17 @@ class MainActivity : AppCompatActivity() {
             contactName = it
             contactNameTextView.text = it
         }
+        if (ScheduleManager.isEnabled(this)) {
+            intervals.clear()
+            intervals.addAll(ScheduleManager.getIntervals(this))
+            updateIntervalsText()
+        }
+    }
+
+    private fun clearSchedule() {
+        ScheduleManager.cancelSchedule(this)
+        intervals.clear()
+        updateIntervalsText()
     }
 
     private fun requestPermissionsIfNeeded() {

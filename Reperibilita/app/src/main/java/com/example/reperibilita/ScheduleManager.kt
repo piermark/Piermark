@@ -12,6 +12,7 @@ object ScheduleManager {
     private const val KEY_NUMBER = "number"
     private const val KEY_NAME = "name"
     private const val KEY_INTERVALS = "intervals"
+    private const val KEY_ENABLED = "enabled"
 
     fun schedule(context: Context, intervals: List<Interval>, number: String, name: String) {
         cancelAlarms(context)
@@ -20,6 +21,7 @@ object ScheduleManager {
             .putString(KEY_NUMBER, number)
             .putString(KEY_NAME, name)
             .putString(KEY_INTERVALS, serialize(intervals))
+            .putBoolean(KEY_ENABLED, true)
             .apply()
         intervals.forEachIndexed { index, interval ->
             setAlarm(context, interval.start.timeInMillis, true, number, index)
@@ -44,6 +46,7 @@ object ScheduleManager {
 
     fun restoreAlarms(context: Context) {
         val prefs = prefs(context)
+        if (!prefs.getBoolean(KEY_ENABLED, false)) return
         val number = prefs.getString(KEY_NUMBER, null) ?: return
         val serialized = prefs.getString(KEY_INTERVALS, null) ?: return
         val intervals = deserialize(serialized)
@@ -76,11 +79,24 @@ object ScheduleManager {
         }
     }
 
+    fun cancelSchedule(context: Context) {
+        cancelAlarms(context)
+        prefs(context).edit().putBoolean(KEY_ENABLED, false).apply()
+    }
+
     fun getScheduledNumber(context: Context): String? =
         prefs(context).getString(KEY_NUMBER, null)
 
     fun getScheduledName(context: Context): String? =
         prefs(context).getString(KEY_NAME, null)
+
+    fun isEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_ENABLED, false)
+
+    fun getIntervals(context: Context): List<Interval> {
+        val data = prefs(context).getString(KEY_INTERVALS, null) ?: return emptyList()
+        return deserialize(data)
+    }
 
     private fun serialize(intervals: List<Interval>): String =
         intervals.joinToString(";") { "${it.start.timeInMillis},${it.end.timeInMillis}" }
