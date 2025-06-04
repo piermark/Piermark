@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateIntervalsText() {
-        intervalsTextView.text = intervals.joinToString("\n") { it.toString() }
+        intervalsTextView.text = intervals.joinToString("\n") { "\u2022 ${it}" }
     }
 
     private fun schedule() {

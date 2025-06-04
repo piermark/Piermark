@@ -14,6 +14,7 @@ object ScheduleManager {
     private const val KEY_INTERVALS = "intervals"
 
     fun schedule(context: Context, intervals: List<Interval>, number: String, name: String) {
+        cancelAlarms(context)
         val prefs = prefs(context)
         prefs.edit()
             .putString(KEY_NUMBER, number)
@@ -49,6 +50,29 @@ object ScheduleManager {
         intervals.forEachIndexed { index, interval ->
             setAlarm(context, interval.start.timeInMillis, true, number, index)
             setAlarm(context, interval.end.timeInMillis, false, number, index)
+        }
+    }
+
+    private fun cancelAlarms(context: Context) {
+        val prefs = prefs(context)
+        val number = prefs.getString(KEY_NUMBER, null) ?: return
+        val serialized = prefs.getString(KEY_INTERVALS, null) ?: return
+        val intervals = deserialize(serialized)
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        intervals.forEachIndexed { index, _ ->
+            listOf(true, false).forEach { activate ->
+                val intent = Intent(context, AlarmReceiver::class.java).apply {
+                    action = if (activate) AlarmReceiver.ACTION_ACTIVATE else AlarmReceiver.ACTION_DEACTIVATE
+                    putExtra(AlarmReceiver.EXTRA_NUMBER, number)
+                }
+                val pending = PendingIntent.getBroadcast(
+                    context,
+                    index * 2 + if (activate) 1 else 0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                alarmManager.cancel(pending)
+            }
         }
     }
 
