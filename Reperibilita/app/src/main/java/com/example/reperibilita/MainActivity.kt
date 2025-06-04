@@ -19,11 +19,14 @@ import com.google.android.material.timepicker.TimeFormat
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Calendar
 
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var phoneEditText: EditText
+    private lateinit var contactNameTextView: TextView
     private lateinit var intervalsTextView: TextView
     private val intervals = mutableListOf<Interval>()
+    private var contactName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         phoneEditText = findViewById(R.id.phoneEditText)
         intervalsTextView = findViewById(R.id.intervalsTextView)
+        contactNameTextView = findViewById(R.id.contactNameTextView)
         val selectContactButton: Button = findViewById(R.id.selectContactButton)
         val addIntervalButton: Button = findViewById(R.id.addIntervalButton)
         val scheduleButton: Button = findViewById(R.id.scheduleButton)
@@ -44,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         deactivateButton.setOnClickListener { ForwardingService.deactivate(this) }
 
         requestPermissionsIfNeeded()
+        loadScheduledData()
     }
 
     private fun pickContact() {
@@ -56,21 +61,31 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
-                val number = getPhoneFromUri(uri)
-                phoneEditText.setText(number)
+                queryContact(uri)
             }
         }
     }
 
-    private fun getPhoneFromUri(uri: Uri): String {
-        var number = ""
-        val cursor = contentResolver.query(uri, null, null, null, null)
+    private fun queryContact(uri: Uri) {
+        val cursor = contentResolver.query(
+            uri,
+            arrayOf(
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+            ),
+            null,
+            null,
+            null
+        )
         cursor?.use {
             if (it.moveToFirst()) {
-                number = it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                val number = it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                val name = it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                phoneEditText.setText(number)
+                contactNameTextView.text = name
+                contactName = name
             }
         }
-        return number
     }
 
     private fun addInterval() {
@@ -118,7 +133,15 @@ class MainActivity : AppCompatActivity() {
     private fun schedule() {
         val number = phoneEditText.text.toString()
         if (number.isNotBlank() && intervals.isNotEmpty()) {
-            ScheduleManager.schedule(this, intervals, number)
+            ScheduleManager.schedule(this, intervals, number, contactName)
+        }
+    }
+
+    private fun loadScheduledData() {
+        ScheduleManager.getScheduledNumber(this)?.let { phoneEditText.setText(it) }
+        ScheduleManager.getScheduledName(this)?.let {
+            contactName = it
+            contactNameTextView.text = it
         }
     }
 

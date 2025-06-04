@@ -30,12 +30,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/contactNameTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:text="@string/no_contact"
+        app:layout_constraintTop_toBottomOf="@id/selectContactButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/addIntervalButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/add_interval"
-        app:layout_constraintTop_toBottomOf="@id/selectContactButton"
+        app:layout_constraintTop_toBottomOf="@id/contactNameTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

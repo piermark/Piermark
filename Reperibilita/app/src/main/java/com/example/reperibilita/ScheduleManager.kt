@@ -10,11 +10,14 @@ import java.util.Calendar
 object ScheduleManager {
     private const val PREFS = "schedules"
     private const val KEY_NUMBER = "number"
+    private const val KEY_NAME = "name"
     private const val KEY_INTERVALS = "intervals"
 
-    fun schedule(context: Context, intervals: List<Interval>, number: String) {
+    fun schedule(context: Context, intervals: List<Interval>, number: String, name: String) {
         val prefs = prefs(context)
-        prefs.edit().putString(KEY_NUMBER, number)
+        prefs.edit()
+            .putString(KEY_NUMBER, number)
+            .putString(KEY_NAME, name)
             .putString(KEY_INTERVALS, serialize(intervals))
             .apply()
         intervals.forEachIndexed { index, interval ->
@@ -48,6 +51,12 @@ object ScheduleManager {
             setAlarm(context, interval.end.timeInMillis, false, number, index)
         }
     }
+
+    fun getScheduledNumber(context: Context): String? =
+        prefs(context).getString(KEY_NUMBER, null)
+
+    fun getScheduledName(context: Context): String? =
+        prefs(context).getString(KEY_NAME, null)
 
     private fun serialize(intervals: List<Interval>): String =
         intervals.joinToString(";") { "${it.start.timeInMillis},${it.end.timeInMillis}" }

@@ -6,6 +6,7 @@
     <string name="deactivate">Disattiva Inoltro</string>
     <string name="schedule">Programma</string>
     <string name="phone_number">Numero</string>
+    <string name="no_contact">Nessun contatto selezionato</string>
     <string name="select_start_time">Ora di inizio</string>
     <string name="select_end_time">Ora di fine</string>
     <string name="select_start_date">Data di inizio</string>
