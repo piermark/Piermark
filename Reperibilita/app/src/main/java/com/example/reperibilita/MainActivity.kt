@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         selectContactButton.setOnClickListener { pickContact() }
         addIntervalButton.setOnClickListener { addInterval() }
         scheduleButton.setOnClickListener { schedule() }
-        activateButton.setOnClickListener { ForwardingService.activate(this, phoneEditText.text.toString()) }
+        activateButton.setOnClickListener { ForwardingService.activate(this, cleanNumber(phoneEditText.text.toString())) }
         deactivateButton.setOnClickListener { ForwardingService.deactivate(this) }
         clearButton.setOnClickListener { clearSchedule() }
 
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                     endTimePicker.addOnPositiveButtonClickListener {
                         end.set(Calendar.HOUR_OF_DAY, endTimePicker.hour)
                         end.set(Calendar.MINUTE, endTimePicker.minute)
-                        val number = phoneEditText.text.toString()
+                        val number = cleanNumber(phoneEditText.text.toString())
                         if (number.isNotBlank()) {
                             intervals.add(Interval(start, end, number, contactName))
                             updateIntervalsText()
@@ -169,4 +169,6 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, toRequest.toTypedArray(), 0)
         }
     }
+
+    private fun cleanNumber(raw: String): String = raw.filter { it.isDigit() }
 }
