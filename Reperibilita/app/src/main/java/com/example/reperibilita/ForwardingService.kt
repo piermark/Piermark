@@ -9,7 +9,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.telephony.TelephonyManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
@@ -42,11 +45,37 @@ class ForwardingService : Service() {
 
     private fun sendActivationCode(phoneNumber: String) {
         val clean = phoneNumber.filter { it.isDigit() }
-        val ussd = "**21*+39${clean}#"
-        // encode the entire string so the final # is included
-        val uri = Uri.parse("tel:" + Uri.encode(ussd))
-        val intent = Intent(Intent.ACTION_CALL, uri)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        val code = "**21*+39${clean}#"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val tm = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+            tm.sendUssdRequest(code, object : TelephonyManager.UssdResponseCallback() {
+                override fun onReceiveUssdResponse(
+                    telephonyManager: TelephonyManager,
+                    request: String,
+                    response: CharSequence
+                ) {
+                    stopForeground(true)
+                    stopSelf()
+                }
+
+                override fun onReceiveUssdResponseFailed(
+                    telephonyManager: TelephonyManager,
+                    request: String,
+                    failureCode: Int
+                ) {
+                    dialFallback(code)
+                }
+            }, Handler(Looper.getMainLooper()))
+        } else {
+            dialFallback(code)
+        }
+    }
+
+    private fun dialFallback(code: String) {
+        val uri = Uri.fromParts("tel", code, null)
+        val intent = Intent(Intent.ACTION_CALL, uri).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
         startActivity(intent)
         stopForeground(true)
         stopSelf()
@@ -63,9 +92,10 @@ class ForwardingService : Service() {
         }
 
         fun deactivate(context: Context) {
-            val uri = Uri.parse("tel:%2321%23")
-            val intent = Intent(Intent.ACTION_CALL, uri)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            val uri = Uri.fromParts("tel", "#21#", null)
+            val intent = Intent(Intent.ACTION_CALL, uri).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
             context.startActivity(intent)
         }
     }

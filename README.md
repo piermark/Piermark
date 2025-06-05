@@ -2,7 +2,16 @@
 
 Questo repository contiene una semplice app Android (Kotlin) per programmare l'inoltro di chiamata sul proprio telefono.
 
-La funzionalità principale prevede l'attivazione tramite il codice `**21*+39[NUMERO_DESTINAZIONE]#` e la disattivazione con `#21#`. L'app compone l'intera stringa MMI codificandola con `Uri.encode` così da includere correttamente il carattere `#` finale. Dall'app è possibile scegliere il numero dalla rubrica e programmare l'inoltro definendo intervalli con data e ora di inizio e fine.
+La funzionalità principale prevede l'attivazione tramite il codice
+`**21*+39[NUMERO_DESTINAZIONE]#` e la disattivazione con `#21#`.
+Per eseguire il codice MMI l'app, quando possibile (Android 8+), utilizza
+`TelephonyManager.sendUssdRequest` così da inviare il comando in
+background senza aprire il dialer. Sui dispositivi più vecchi il codice
+viene invece composto tramite `ACTION_CALL` usando
+`Uri.fromParts("tel", code, null)`.
+Dall'interfaccia è possibile scegliere il numero dalla rubrica e
+programmare l'inoltro definendo intervalli con data e ora di inizio e
+fine.
 Il numero selezionato viene ripulito da spazi o simboli extra prima di essere utilizzato nel codice MMI.
 Ogni fascia salvata mostra il nome del contatto scelto così da sapere a chi è indirizzata. È possibile inserire più contatti e numeri durante la giornata, programmando diverse fasce orarie.
 Gli allarmi vengono impostati con `AlarmManager.setExactAndAllowWhileIdle` per funzionare anche con il telefono bloccato e in modalità doze.
