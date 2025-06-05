@@ -5,7 +5,16 @@ Questo repository contiene una semplice app Android (Kotlin) per programmare l'i
 La funzionalità principale prevede l'attivazione tramite il codice `**21*+39[numerodidestinazione]#` e la disattivazione con `#21#`. Dall'app è possibile scegliere il numero dalla rubrica e programmare l'inoltro definendo intervalli con data e ora di inizio e fine. Ogni fascia salvata mostra il nome del contatto scelto così da sapere a chi è indirizzata. Più fasce possono essere impostate nello stesso giorno e il servizio resta attivo in background. L'interfaccia utilizza componenti Material per una presentazione chiara degli intervalli programmati.
 
 ## Build dell'APK
-È necessario Android Studio (o il comando `gradlew`) con un'installazione dell'SDK. Compilare in questo modo:
+Per compilare è necessario avere installato l'SDK Android.
+Se Android Studio non individua automaticamente il percorso, create nella radice
+della cartella `Reperibilita` un file `local.properties` con il seguente
+contenuto indicando il percorso del vostro SDK:
+
+```
+sdk.dir=C:\\Percorso\\Android\\sdk
+```
+
+Una volta configurato l'SDK potete compilare usando:
 
 ```bash
 cd Reperibilita
