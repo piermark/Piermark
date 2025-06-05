@@ -9,23 +9,18 @@ import java.util.Calendar
 
 object ScheduleManager {
     private const val PREFS = "schedules"
-    private const val KEY_NUMBER = "number"
-    private const val KEY_NAME = "name"
     private const val KEY_INTERVALS = "intervals"
     private const val KEY_ENABLED = "enabled"
 
-    fun schedule(context: Context, intervals: List<Interval>, number: String, name: String) {
+    fun schedule(context: Context, intervals: List<Interval>) {
         cancelAlarms(context)
-        val prefs = prefs(context)
-        prefs.edit()
-            .putString(KEY_NUMBER, number)
-            .putString(KEY_NAME, name)
+        prefs(context).edit()
             .putString(KEY_INTERVALS, serialize(intervals))
             .putBoolean(KEY_ENABLED, true)
             .apply()
         intervals.forEachIndexed { index, interval ->
-            setAlarm(context, interval.start.timeInMillis, true, number, index)
-            setAlarm(context, interval.end.timeInMillis, false, number, index)
+            setAlarm(context, interval.start.timeInMillis, true, interval.number, index)
+            setAlarm(context, interval.end.timeInMillis, false, interval.number, index)
         }
     }
 
@@ -47,26 +42,24 @@ object ScheduleManager {
     fun restoreAlarms(context: Context) {
         val prefs = prefs(context)
         if (!prefs.getBoolean(KEY_ENABLED, false)) return
-        val number = prefs.getString(KEY_NUMBER, null) ?: return
         val serialized = prefs.getString(KEY_INTERVALS, null) ?: return
         val intervals = deserialize(serialized)
         intervals.forEachIndexed { index, interval ->
-            setAlarm(context, interval.start.timeInMillis, true, number, index)
-            setAlarm(context, interval.end.timeInMillis, false, number, index)
+            setAlarm(context, interval.start.timeInMillis, true, interval.number, index)
+            setAlarm(context, interval.end.timeInMillis, false, interval.number, index)
         }
     }
 
     private fun cancelAlarms(context: Context) {
         val prefs = prefs(context)
-        val number = prefs.getString(KEY_NUMBER, null) ?: return
         val serialized = prefs.getString(KEY_INTERVALS, null) ?: return
         val intervals = deserialize(serialized)
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        intervals.forEachIndexed { index, _ ->
+        intervals.forEachIndexed { index, interval ->
             listOf(true, false).forEach { activate ->
                 val intent = Intent(context, AlarmReceiver::class.java).apply {
                     action = if (activate) AlarmReceiver.ACTION_ACTIVATE else AlarmReceiver.ACTION_DEACTIVATE
-                    putExtra(AlarmReceiver.EXTRA_NUMBER, number)
+                    putExtra(AlarmReceiver.EXTRA_NUMBER, interval.number)
                 }
                 val pending = PendingIntent.getBroadcast(
                     context,
@@ -81,14 +74,11 @@ object ScheduleManager {
 
     fun cancelSchedule(context: Context) {
         cancelAlarms(context)
-        prefs(context).edit().putBoolean(KEY_ENABLED, false).apply()
+        prefs(context).edit()
+            .remove(KEY_INTERVALS)
+            .putBoolean(KEY_ENABLED, false)
+            .apply()
     }
-
-    fun getScheduledNumber(context: Context): String? =
-        prefs(context).getString(KEY_NUMBER, null)
-
-    fun getScheduledName(context: Context): String? =
-        prefs(context).getString(KEY_NAME, null)
 
     fun isEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_ENABLED, false)
@@ -98,18 +88,32 @@ object ScheduleManager {
         return deserialize(data)
     }
 
-    private fun serialize(intervals: List<Interval>): String =
-        intervals.joinToString(";") { "${it.start.timeInMillis},${it.end.timeInMillis}" }
-
-    private fun deserialize(data: String): List<Interval> =
-        data.split(';').mapNotNull { part ->
-            val pieces = part.split(',')
-            if (pieces.size == 2) {
-                val start = Calendar.getInstance().apply { timeInMillis = pieces[0].toLong() }
-                val end = Calendar.getInstance().apply { timeInMillis = pieces[1].toLong() }
-                Interval(start, end)
-            } else null
+    private fun serialize(intervals: List<Interval>): String {
+        val arr = org.json.JSONArray()
+        intervals.forEach { interval ->
+            val obj = org.json.JSONObject()
+            obj.put("s", interval.start.timeInMillis)
+            obj.put("e", interval.end.timeInMillis)
+            obj.put("n", interval.number)
+            obj.put("name", interval.name)
+            arr.put(obj)
         }
+        return arr.toString()
+    }
+
+    private fun deserialize(data: String): List<Interval> {
+        val arr = org.json.JSONArray(data)
+        val list = mutableListOf<Interval>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            val start = Calendar.getInstance().apply { timeInMillis = obj.getLong("s") }
+            val end = Calendar.getInstance().apply { timeInMillis = obj.getLong("e") }
+            val number = obj.getString("n")
+            val name = obj.getString("name")
+            list.add(Interval(start, end, number, name))
+        }
+        return list
+    }
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

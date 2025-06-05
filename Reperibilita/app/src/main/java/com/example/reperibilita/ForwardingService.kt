@@ -41,7 +41,7 @@ class ForwardingService : Service() {
     }
 
     private fun sendActivationCode(phone: String) {
-        val uri = Uri.parse("tel:**21*+39${'$'}{phone}%23")
+        val uri = Uri.parse("tel:21+39${'$'}{phone}%23%2A")
         val intent = Intent(Intent.ACTION_CALL, uri)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)

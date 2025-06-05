@@ -116,8 +116,11 @@ class MainActivity : AppCompatActivity() {
                     endTimePicker.addOnPositiveButtonClickListener {
                         end.set(Calendar.HOUR_OF_DAY, endTimePicker.hour)
                         end.set(Calendar.MINUTE, endTimePicker.minute)
-                        intervals.add(Interval(start, end))
-                        updateIntervalsText()
+                        val number = phoneEditText.text.toString()
+                        if (number.isNotBlank()) {
+                            intervals.add(Interval(start, end, number, contactName))
+                            updateIntervalsText()
+                        }
                     }
                     endTimePicker.show(supportFragmentManager, "end_time")
                 }
@@ -129,22 +132,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateIntervalsText() {
-        intervalsTextView.text = intervals.joinToString("\n") { "\u2022 ${it}" }
+        intervalsTextView.text = intervals.joinToString("\n") {
+            "\u2022 ${it} (${it.number})"
+        }
     }
 
     private fun schedule() {
-        val number = phoneEditText.text.toString()
-        if (number.isNotBlank() && intervals.isNotEmpty()) {
-            ScheduleManager.schedule(this, intervals, number, contactName)
+        if (intervals.isNotEmpty()) {
+            ScheduleManager.schedule(this, intervals)
         }
     }
 
     private fun loadScheduledData() {
-        ScheduleManager.getScheduledNumber(this)?.let { phoneEditText.setText(it) }
-        ScheduleManager.getScheduledName(this)?.let {
-            contactName = it
-            contactNameTextView.text = it
-        }
         if (ScheduleManager.isEnabled(this)) {
             intervals.clear()
             intervals.addAll(ScheduleManager.getIntervals(this))
