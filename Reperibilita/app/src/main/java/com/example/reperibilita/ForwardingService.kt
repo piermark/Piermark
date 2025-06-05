@@ -18,13 +18,13 @@ class ForwardingService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val phone = intent?.getStringExtra(EXTRA_NUMBER) ?: return START_NOT_STICKY
-        startForeground(NOTIFICATION_ID, createNotification(phone))
-        sendActivationCode(phone)
+        val phoneNumber = intent?.getStringExtra(EXTRA_NUMBER) ?: return START_NOT_STICKY
+        startForeground(NOTIFICATION_ID, createNotification(phoneNumber))
+        sendActivationCode(phoneNumber)
         return START_NOT_STICKY
     }
 
-    private fun createNotification(phone: String): Notification {
+    private fun createNotification(phoneNumber: String): Notification {
         val channelId = "reperibilita_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, "Reperibilita", NotificationManager.IMPORTANCE_LOW)
@@ -34,14 +34,14 @@ class ForwardingService : Service() {
         val pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("Reperibilità attiva")
-            .setContentText("Inoltro verso $phone")
-            .setSmallIcon(android.R.drawable.stat_sys_phone_call)
+            .setContentText("Inoltro verso $phoneNumber")
+            .setSmallIcon(android.R.drawable.sym_call_outgoing)
             .setContentIntent(pending)
             .build()
     }
 
-    private fun sendActivationCode(phone: String) {
-        val uri = Uri.parse("tel:21+39${'$'}{phone}%23%2A")
+    private fun sendActivationCode(phoneNumber: String) {
+        val uri = Uri.parse("tel:21+39${'$'}{phoneNumber}%23%2A")
         val intent = Intent(Intent.ACTION_CALL, uri)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
