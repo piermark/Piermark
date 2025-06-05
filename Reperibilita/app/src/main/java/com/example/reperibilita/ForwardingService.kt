@@ -61,7 +61,7 @@ class ForwardingService : Service() {
         }
 
         fun deactivate(context: Context) {
-            val uri = Uri.parse("tel:#21%23")
+            val uri = Uri.parse("tel:%23%23002%23")
             val intent = Intent(Intent.ACTION_CALL, uri)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
