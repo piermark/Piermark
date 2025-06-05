@@ -1,0 +1,5 @@
+# Ignore Gradle build output
+**/build/
+# Ignore local Gradle settings
+.gradle/
+local.properties
