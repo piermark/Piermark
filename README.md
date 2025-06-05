@@ -2,7 +2,11 @@
 
 Questo repository contiene una semplice app Android (Kotlin) per programmare l'inoltro di chiamata sul proprio telefono.
 
-La funzionalità principale prevede l'attivazione tramite il codice `**21*+39[numerodidestinazione]#` e la disattivazione con `#21#`. Dall'app è possibile scegliere il numero dalla rubrica e programmare l'inoltro definendo intervalli con data e ora di inizio e fine. Ogni fascia salvata mostra il nome del contatto scelto così da sapere a chi è indirizzata. Più fasce possono essere impostate nello stesso giorno e il servizio resta attivo in background. L'interfaccia utilizza componenti Material per una presentazione chiara degli intervalli programmati.
+La funzionalità principale prevede l'attivazione tramite il codice `**21*+39[numerodidestinazione]#` e la disattivazione con `#21#`. Dall'app è possibile scegliere il numero dalla rubrica e programmare l'inoltro definendo intervalli con data e ora di inizio e fine.
+Ogni fascia salvata mostra il nome del contatto scelto così da sapere a chi è indirizzata. È possibile inserire più contatti e numeri durante la giornata, programmando diverse fasce orarie.
+Gli allarmi vengono impostati con `AlarmManager.setExactAndAllowWhileIdle` per funzionare anche con il telefono bloccato e in modalità doze.
+Il servizio in foreground garantisce l'esecuzione in background e viene ripristinato automaticamente al riavvio.
+L'interfaccia utilizza componenti Material per una presentazione chiara degli intervalli programmati.
 
 ## Build dell'APK
 Per compilare è necessario avere installato l'SDK Android.

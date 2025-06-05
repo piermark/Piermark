@@ -46,6 +46,8 @@ class ForwardingService : Service() {
         val intent = Intent(Intent.ACTION_CALL, uri)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
+        stopForeground(true)
+        stopSelf()
     }
 
     companion object {
